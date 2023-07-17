@@ -46,6 +46,8 @@
 #define LCD_CHARACTER  1
 #define LCD_COMMAND    0
 
+#define LCD_MAX_LOWS 4
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -68,10 +70,7 @@ typedef struct {
     uint8_t _row_offsets[4];
 } lcd_handle_t;
 
-void _pulse_enable(uint8_t en_pin);
-void _send_4bit(lcd_handle_t* lcd_handle, uint8_t value);
-void _send_8bit(lcd_handle_t* lcd_handle, uint8_t value);
-void _send_byte(lcd_handle_t* lcd_handle, uint8_t value, uint8_t mode);
+void lcd_send_byte(lcd_handle_t* lcd_handle, uint8_t value, uint8_t mode);
 
 /*!
 * @brief lcd_handle을 초기화 하는 함수
@@ -87,16 +86,17 @@ bool lcd_begin(lcd_handle_t* lcd_handle);
 void lcd_clear(lcd_handle_t* lcd_handle);
 void lcd_home(lcd_handle_t* lcd_handle);
 void lcd_setCuror(lcd_handle_t* lcd_handle, uint8_t row, uint8_t col);
-void lcd_print(lcd_handle_t* lcd_handle, char ch);
+void lcd_printf(lcd_handle_t* lcd_handle, const char* Format, ...);
+void lcd_print_char(lcd_handle_t* lcd_handle, const char ch);
 
-void noDisplay();
-void display();
-void noBlink();
-void blink();
-void noCursor();
-void cursor();
-void noBacklight();
-void backlight();
+void lcd_noDisplay(lcd_handle_t* lcd_handle);
+void lcd_display(lcd_handle_t* lcd_handle);
+void lcd_noBlink(lcd_handle_t* lcd_handle);
+void lcd_blink(lcd_handle_t* lcd_handle);
+void lcd_noCursor(lcd_handle_t* lcd_handle);
+void lcd_cursor(lcd_handle_t* lcd_handle);
+
+void lcd_create_char(lcd_handle_t* lcd_handle, uint8_t location, uint8_t charmap[]);
 
 #ifdef __cplusplus
 }
