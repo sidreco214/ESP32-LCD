@@ -1,3 +1,11 @@
+/*
+4비트 모드 확인 못해봄
+아두이노 LiquidCrystal.h로 해봐도 안되는걸 보면, LCD가 지원안하거나 설정 방법이 다른 듯
+
+create char도 확인 못해봄
+아두이노 라이브러리를 사용해도 안되는 걸 보면, LCD가 지원안하거나 설정 방법이 다른 듯
+*/
+
 #ifndef LCD_H
 #define LCD_H
 
@@ -15,10 +23,10 @@
 #define LCD_SETDDRAMADDR 0x80
 
 // flags for display entry mode
-#define LCD_ENTRYRIGHT 0x00
-#define LCD_ENTRYLEFT 0x02
-#define LCD_ENTRYSHIFTINCREMENT 0x01
-#define LCD_ENTRYSHIFTDECREMENT 0x00
+#define LCD_ENTRYRIGHT 0x02 //여기 수정함
+#define LCD_ENTRYLEFT 0x00
+#define LCD_ENTRYSHIFTON 0x01
+#define LCD_ENTRYSHIFTOFF 0x00
 
 // flags for display on/off control
 #define LCD_DISPLAYON 0x04
@@ -42,61 +50,51 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-//Modes for send_byte
-#define LCD_CHARACTER  1
-#define LCD_COMMAND    0
-
-#define LCD_MAX_LOWS 4
+#ifndef byte
+typedef uint8_t byte;
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//구조체에 기본값을 할당해서 리턴하는 함수를 만들고, 핀을 설정하는 함수들 만들기
+typedef struct {
+    uint8_t en_pin; //en_pin 펄스의 상승 엣지에서 명령어 실행
+    uint8_t rs_pin; //resistor selection 0: command, 1: resistor read/write
+    uint8_t data_pins[8];
+} lcd_pin_t;
 
 typedef struct {
-    uint8_t rows; //number of rows
-    uint8_t cols; //numver of columns
+    uint8_t rows;
+    uint8_t cols;
+    lcd_pin_t pins;
 
-    uint8_t rs_pin; // LOW: command.  HIGH: character.
-    uint8_t rw_pin; // LOW: write to LCD.  HIGH: read from LCD. 기본값 255
-    uint8_t en_pin; // activated by a HIGH pulse.
-    uint8_t data_pins[8];
-
-    uint8_t _displaycontrol;
-    uint8_t _displayfunction;
-    uint8_t _displaymode;
-
+    byte _entryMod; 
+    byte _displaycontrol; //Display on off blink control
+    byte _functionSet;
     uint8_t _row_offsets[4];
 } lcd_handle_t;
 
-void lcd_send_byte(lcd_handle_t* lcd_handle, uint8_t value, uint8_t mode);
+void lcd_write(lcd_handle_t lcd_handle, uint8_t value);
+void lcd_command(lcd_handle_t lcd_handle, uint8_t cmd);
 
-/*!
-* @brief lcd_handle을 초기화 하는 함수
-* @param cols number of columns
-* @param rows number of rows
-* @param fourBitsMode true of false
-* @return lcd_handle, 반드시 init 함수로 초기화한 handle을 사용할 것
-*/
-lcd_handle_t lcd_init(uint8_t cols, uint8_t rows, bool fourBitsMode);
-void lcd_setDataPin(lcd_handle_t* lcd_handle, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t d4, uint8_t d5, uint8_t d6, uint8_t d7);
-bool lcd_begin(lcd_handle_t* lcd_handle);
+lcd_handle_t lcd_init(lcd_pin_t lcd_pin, uint8_t cols, uint8_t rows, bool Fourbits);
+void lcd_begin(lcd_handle_t* lcd_handle);
 
-void lcd_clear(lcd_handle_t* lcd_handle);
-void lcd_home(lcd_handle_t* lcd_handle);
-void lcd_setCuror(lcd_handle_t* lcd_handle, uint8_t row, uint8_t col);
-void lcd_printf(lcd_handle_t* lcd_handle, const char* Format, ...);
-void lcd_print_char(lcd_handle_t* lcd_handle, const char ch);
+void lcd_clear(lcd_handle_t lcd_handle);
+void lcd_home(lcd_handle_t lcd_handle);
 
-void lcd_noDisplay(lcd_handle_t* lcd_handle);
-void lcd_display(lcd_handle_t* lcd_handle);
-void lcd_noBlink(lcd_handle_t* lcd_handle);
-void lcd_blink(lcd_handle_t* lcd_handle);
-void lcd_noCursor(lcd_handle_t* lcd_handle);
-void lcd_cursor(lcd_handle_t* lcd_handle);
+void lcd_setCursor(lcd_handle_t lcd_handle, uint8_t col, uint8_t row);
+void lcd_printf(lcd_handle_t lcd_handle, const char* Format, ...);
 
-void lcd_create_char(lcd_handle_t* lcd_handle, uint8_t location, uint8_t charmap[]);
+void lcd_noDisplay(lcd_handle_t lcd_handle);
+void lcd_Display(lcd_handle_t lcd_handle);
+void lcd_noCursor(lcd_handle_t lcd_handle);
+void lcd_Cursor(lcd_handle_t lcd_handle);
+void lcd_noBlink(lcd_handle_t lcd_handle);
+void lcd_blink(lcd_handle_t lcd_handle);
+
+void lcd_create_char(lcd_handle_t lcd_handle, uint8_t index, uint8_t charmap[8]);
 
 #ifdef __cplusplus
 }
